@@ -1,65 +1,54 @@
-// chat-sdk.js
+// datetime-utils.js
 
-// Import required libraries
-const WebSocket = require('ws');
+/**
+ * Format a date object into a string using a specified format.
+ * @param {Date} date - The date object to format.
+ * @param {string} format - The format string (e.g., 'YYYY-MM-DD HH:mm:ss').
+ * @returns {string} The formatted date string.
+ */
+function formatDate(date, format) {
+  const yyyy = date.getFullYear().toString();
+  const mm = (date.getMonth() + 1).toString().padStart(2, '0');
+  const dd = date.getDate().toString().padStart(2, '0');
+  const HH = date.getHours().toString().padStart(2, '0');
+  const mm = date.getMinutes().toString().padStart(2, '0');
+  const ss = date.getSeconds().toString().padStart(2, '0');
 
-class ChatSDK {
-  constructor(options) {
-    // Initialize with provided options
-    this.serverUrl = options.serverUrl;
-    this.accessToken = options.accessToken;
-    this.userId = options.userId;
-    this.socket = null;
-  }
-
-  connect() {
-    // Connect to WebSocket server
-    this.socket = new WebSocket(this.serverUrl);
-
-    // Event listeners for WebSocket connection
-    this.socket.on('open', () => {
-      console.log('Connected to chat server');
-      this.authenticate();
-    });
-
-    this.socket.on('message', (data) => {
-      // Handle incoming messages
-      console.log('Received message:', data);
-      // Further processing logic can be added here
-    });
-
-    this.socket.on('close', () => {
-      console.log('Disconnected from chat server');
-    });
-
-    this.socket.on('error', (error) => {
-      console.error('WebSocket error:', error);
-    });
-  }
-
-  authenticate() {
-    // Send authentication request with access token and user ID
-    const authData = {
-      type: 'authenticate',
-      accessToken: this.accessToken,
-      userId: this.userId,
-    };
-    this.socket.send(JSON.stringify(authData));
-  }
-
-  sendMessage(message) {
-    // Send message to the chat server
-    const messageData = {
-      type: 'message',
-      content: message,
-    };
-    this.socket.send(JSON.stringify(messageData));
-  }
-
-  disconnect() {
-    // Close WebSocket connection
-    this.socket.close();
-  }
+  return format
+      .replace('YYYY', yyyy)
+      .replace('MM', mm)
+      .replace('DD', dd)
+      .replace('HH', HH)
+      .replace('mm', mm)
+      .replace('ss', ss);
 }
 
-module.exports = ChatSDK;
+/**
+* Parse a string into a Date object using a specified format.
+* @param {string} dateString - The date string to parse.
+* @param {string} format - The format string (e.g., 'YYYY-MM-DD HH:mm:ss').
+* @returns {Date} The parsed Date object.
+*/
+function parseDate(dateString, format) {
+  const yyyyIndex = format.indexOf('YYYY');
+  const mmIndex = format.indexOf('MM');
+  const ddIndex = format.indexOf('DD');
+  const HHIndex = format.indexOf('HH');
+  const mmIndex = format.indexOf('mm');
+  const ssIndex = format.indexOf('ss');
+
+  const yyyy = parseInt(dateString.substring(yyyyIndex, yyyyIndex + 4), 10);
+  const mm = parseInt(dateString.substring(mmIndex, mmIndex + 2), 10) - 1;
+  const dd = parseInt(dateString.substring(ddIndex, ddIndex + 2), 10);
+  const HH = parseInt(dateString.substring(HHIndex, HHIndex + 2), 10);
+  const mm = parseInt(dateString.substring(mmIndex, mmIndex + 2), 10);
+  const ss = parseInt(dateString.substring(ssIndex, ssIndex + 2), 10);
+
+  return new Date(yyyy, mm, dd, HH, mm, ss);
+}
+
+// Export functions to be used by consumers of this package
+module.exports = {
+  formatDate,
+  parseDate
+};
